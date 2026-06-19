@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="PWA-приложение с боковым меню и шестью отдельными страницами">
+  <title>Мой планировщик</title>
+
+  <!-- Подключаем стили, манифест PWA и иконку вкладки. -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+  <!-- Затемнение фона появляется, когда открыто боковое меню. -->
+  <button class="menu-overlay" id="menuOverlay" type="button" aria-label="Закрыть меню" tabindex="-1"></button>
+
+  <!-- Выдвижная панель навигации. -->
+  <aside class="side-menu" id="sideMenu" aria-label="Главное меню" aria-hidden="true">
+    <div class="side-menu__header">
+      <div class="brand-mark" aria-hidden="true">П</div>
+      <div>
+        <strong>Планировщик</strong>
+        <span>Выберите раздел</span>
+      </div>
+      <button class="icon-button close-button" id="closeMenuButton" type="button" aria-label="Закрыть меню">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <!-- data-page связывает кнопку меню с соответствующей секцией страницы. -->
+    <nav class="side-menu__nav">
+      <button class="nav-item is-active" type="button" data-page="home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z"/></svg>
+        <span>Главная</span>
+      </button>
+      <button class="nav-item" type="button" data-page="calendar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v3M19 3v3M3 9h18M5 5h14a2 2 0 0 1 2 2v13H3V7a2 2 0 0 1 2-2z"/></svg>
+        <span>Календарь</span>
+      </button>
+      <button class="nav-item" type="button" data-page="regular">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-8M20 12h-8M20 17h-8M4 7l2 2 3-4M4 12l2 2 3-4M4 17l2 2 3-4"/></svg>
+        <span>Регулярное</span>
+      </button>
+      <button class="nav-item" type="button" data-page="planning">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M6 16l3-4 3 2 5-7 2 2M6 5h12"/></svg>
+        <span>Планирование</span>
+      </button>
+      <button class="nav-item" type="button" data-page="tasks">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
+        <span>Задачи и цели</span>
+      </button>
+      <button class="nav-item" type="button" data-page="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06-2.78 2.78-.06-.06A1.8 1.8 0 0 0 15 19.4a1.8 1.8 0 0 0-1.08 1.65V21h-3.84v-.08A1.8 1.8 0 0 0 9 19.4a1.8 1.8 0 0 0-1.98.36l-.06.06-2.78-2.78.06-.06A1.8 1.8 0 0 0 4.6 15a1.8 1.8 0 0 0-1.65-1.08H3v-3.84h.08A1.8 1.8 0 0 0 4.6 9a1.8 1.8 0 0 0-.36-1.98l-.06-.06 2.78-2.78.06.06A1.8 1.8 0 0 0 9 4.6a1.8 1.8 0 0 0 1.08-1.65V3h3.84v.08A1.8 1.8 0 0 0 15 4.6a1.8 1.8 0 0 0 1.98-.36l.06-.06 2.78 2.78-.06.06A1.8 1.8 0 0 0 19.4 9a1.8 1.8 0 0 0 1.65 1.08H21v3.84h-.08A1.8 1.8 0 0 0 19.4 15z"/></svg>
+        <span>Настройки</span>
+      </button>
+    </nav>
+
+    <div class="side-menu__footer">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span>Работает офлайн</span>
+    </div>
+  </aside>
+
+  <div class="app-shell">
+    <!-- Общая шапка остаётся видимой на всех шести страницах. -->
+    <header class="top-bar">
+      <button class="icon-button menu-button" id="openMenuButton" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="sideMenu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="top-bar__titles">
+        <span class="eyebrow">Мой планировщик</span>
+        <h1 id="pageTitle">Главная</h1>
+      </div>
+      <div class="date-badge" id="currentDate" aria-label="Сегодняшняя дата"></div>
+    </header>
+
+    <!-- Каждая section — отдельная страница. JavaScript показывает только активную. -->
+    <main class="page-container" id="pageContainer">
+      <section class="app-page is-active" data-page-panel="home" aria-labelledby="homeHeading">
+        <div class="hero-card">
+          <div>
+            <span class="section-label">Обзор</span>
+            <h2 id="homeHeading">Добро пожаловать</h2>
+            <p>Откройте меню слева сверху и переключайтесь между шестью независимыми страницами.</p>
+          </div>
+          <div class="hero-illustration" aria-hidden="true">
+            <div class="hero-circle hero-circle--large"></div>
+            <div class="hero-circle hero-circle--small"></div>
+            <svg viewBox="0 0 120 120"><path d="M30 75l20-22 16 13 25-32"/><circle cx="30" cy="75" r="4"/><circle cx="50" cy="53" r="4"/><circle cx="66" cy="66" r="4"/><circle cx="91" cy="34" r="4"/></svg>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <article class="stat-card"><span>Сегодня</span><strong>4</strong><small>запланировано</small></article>
+          <article class="stat-card"><span>Неделя</span><strong>18</strong><small>задач</small></article>
+          <article class="stat-card"><span>Выполнено</span><strong>72%</strong><small>за месяц</small></article>
+        </div>
+
+        <article class="content-card">
+          <div class="card-heading"><div><span class="section-label">Быстрый доступ</span><h3>Разделы приложения</h3></div></div>
+          <div class="quick-links">
+            <button type="button" data-go-to="calendar"><span>01</span><strong>Календарь</strong><small>События по датам</small></button>
+            <button type="button" data-go-to="regular"><span>02</span><strong>Регулярное</strong><small>Повторяющиеся дела</small></button>
+            <button type="button" data-go-to="planning"><span>03</span><strong>Планирование</strong><small>Планы и графики</small></button>
+            <button type="button" data-go-to="tasks"><span>04</span><strong>Задачи и цели</strong><small>Списки и прогресс</small></button>
+          </div>
+        </article>
+      </section>
+
+      <section class="app-page" data-page-panel="calendar" aria-labelledby="calendarHeading" hidden>
+        <div class="page-intro">
+          <span class="section-label">Страница 2 из 6</span>
+          <h2 id="calendarHeading">Календарь</h2>
+          <p>Здесь позже можно разместить календарь с событиями, датами и напоминаниями.</p>
+        </div>
+        <article class="content-card placeholder-card">
+          <div class="calendar-preview" aria-hidden="true">
+            <div class="calendar-preview__head"><strong>Июнь</strong><span>2026</span></div>
+            <div class="calendar-preview__week"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+            <div class="calendar-preview__days" id="calendarDays"></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="app-page" data-page-panel="regular" aria-labelledby="regularHeading" hidden>
+        <div class="page-intro">
+          <span class="section-label">Страница 3 из 6</span>
+          <h2 id="regularHeading">Регулярное</h2>
+          <p>Раздел для задач, которые повторяются по дням недели или по выбранному интервалу.</p>
+        </div>
+        <div class="day-list">
+          <article><span class="day-icon">Пн</span><div><strong>Утренняя тренировка</strong><small>07:00–08:00</small></div><span class="pill">Каждую неделю</span></article>
+          <article><span class="day-icon">Ср</span><div><strong>Изучение языка</strong><small>19:00–20:00</small></div><span class="pill">Каждую неделю</span></article>
+          <article><span class="day-icon">Вс</span><div><strong>Уборка и завтрак</strong><small>07:00–08:00</small></div><span class="pill">Каждую неделю</span></article>
+        </div>
+      </section>
+
+      <section class="app-page" data-page-panel="planning" aria-labelledby="planningHeading" hidden>
+        <div class="page-intro">
+          <span class="section-label">Страница 4 из 6</span>
+          <h2 id="planningHeading">Планирование</h2>
+          <p>Страница для долгосрочного планирования и распределения времени.</p>
+        </div>
+        <div class="planning-grid">
+          <article class="content-card"><span class="section-label">Сегодня</span><h3>Главный приоритет</h3><div class="editable-note" contenteditable="true" data-storage-key="todayPriority" role="textbox" aria-label="Главный приоритет">Нажмите и напишите приоритет…</div></article>
+          <article class="content-card"><span class="section-label">Неделя</span><h3>Ожидаемый результат</h3><div class="progress-track"><span style="width: 64%"></span></div><strong class="progress-value">64%</strong></article>
+        </div>
+      </section>
+
+      <section class="app-page" data-page-panel="tasks" aria-labelledby="tasksHeading" hidden>
+        <div class="page-intro">
+          <span class="section-label">Страница 5 из 6</span>
+          <h2 id="tasksHeading">Задачи и цели</h2>
+          <p>Пример отдельной страницы со своим интерактивным списком.</p>
+        </div>
+        <article class="content-card">
+          <form class="task-form" id="taskForm">
+            <label class="visually-hidden" for="taskInput">Новая задача</label>
+            <input id="taskInput" name="task" type="text" maxlength="120" placeholder="Напишите новую задачу" autocomplete="off" required>
+            <button type="submit">Добавить</button>
+          </form>
+          <ul class="task-list" id="taskList" aria-live="polite"></ul>
+          <p class="empty-state" id="taskEmpty">Пока задач нет.</p>
+        </article>
+      </section>
+
+      <section class="app-page" data-page-panel="settings" aria-labelledby="settingsHeading" hidden>
+        <div class="page-intro">
+          <span class="section-label">Страница 6 из 6</span>
+          <h2 id="settingsHeading">Настройки</h2>
+          <p>Параметры сохраняются на этом устройстве.</p>
+        </div>
+        <article class="content-card settings-list">
+          <label class="setting-row"><span><strong>Компактное меню</strong><small>Уменьшить отступы элементов</small></span><input id="compactToggle" type="checkbox" role="switch"></label>
+          <label class="setting-row"><span><strong>Показывать дату</strong><small>Дата справа в верхней панели</small></span><input id="dateToggle" type="checkbox" role="switch" checked></label>
+          <button class="danger-button" id="resetButton" type="button">Очистить сохранённые данные</button>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
